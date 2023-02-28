@@ -4,13 +4,13 @@
 
 mysql8のローカル検証環境を構築するdocker scirpt  
 2台構成のmysql8コンテナを docker-compose で構築する。  
-M1 Mac でVagrantが使えない代わりになる環境を目指した。  
+M1 Mac で使えなくなった Vagrant 代わりになる環境を目指した。  
 
 ## 特徴
 
-systemctlが使える ubuntu22.04  
+docker コンテナ上で systemctl が使える ubuntu22.04 を構築  
 mysql directory (/var/lib/mysql)を永続化済み  
-M1 MacBook にて動作する  
+M1/M2 Mac にて動作する  
 
 ## 使い方
 
