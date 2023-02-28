@@ -1,4 +1,4 @@
-# mysql_ubuntu
+# ローカル環境構築 MySQL8 + ubuntu 22.04 + docker
 
 ## 概要
 
