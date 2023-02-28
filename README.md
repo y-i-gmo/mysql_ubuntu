@@ -21,7 +21,7 @@ docker volume create db2vol
 ```
 起動（バックグラウンド）
 ```
-docker up -d --build &
+docker-compose up -d --build -f compose.yaml
 ```
 起動確認
 ```
@@ -33,7 +33,7 @@ db1コンテナ
 docker exec -it mysql-db1-1 bash
 db2コンテナ
 docker exec -it mysql-db2-1 bash
-```
+ it```
 
 ## MySQL 
 
