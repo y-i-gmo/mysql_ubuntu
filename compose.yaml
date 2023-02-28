@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  db1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    privileged: true
+    command: /sbin/init
+    networks:
+      db_net:
+        ipv4_address: 192.168.100.11
+    ports:
+      - "13306:3306"
+    volumes:
+      - db1vol:/var/lib/mysql
+  db2:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    privileged: true
+    command: /sbin/init
+    networks:
+      db_net:
+        ipv4_address: 192.168.100.12
+    ports:
+      - "23306:3306"
+    volumes:
+      - db2vol:/var/lib/mysql
+
+networks:
+  db_net:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 192.168.100.0/24
+
+volumes:
+  db1vol:
+    external: true
+  db2vol:
+    external: true
+
