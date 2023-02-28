@@ -33,7 +33,7 @@ db1コンテナ
 docker exec -it mysql-db1-1 bash
 db2コンテナ
 docker exec -it mysql-db2-1 bash
- it```
+```
 
 ## MySQL 
 
