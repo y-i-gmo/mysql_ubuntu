@@ -108,6 +108,11 @@ systemctl status mysql
 
 ※db1コンテナmysqlでテーブル/レコードを作成して、レプリケーション構築したレプリカDB(db2)に反映されることを確認
 
+mysqlコマンド
+```
+mysql -ustudy -p -h192.168.100.11
+```
+
 study DB
 ```
 CREATE DATABASE IF NOT EXISTS study  CHARACTER SET utf8mb4 COLLATE utf8mb4_bin ;
@@ -128,18 +133,24 @@ INSERT
 INSERT INTO `study`.`t1` (id, name, idx_num, created_at) VALUES (null, 'name01', 1, now());
 ```
 
+
 #### レプリケーション構築
 
+共通設定
+
+■ db1コンテナ  
 MySQLレプリケーションユーザー作成
+
 ```
+mysql -ustudy -p -h192.168.100.11
+
 CREATE USER 'repl'@'192.168.100.%' IDENTIFIED WITH mysql_native_password BY 'repl';
 GRANT REPLICATION SLAVE ON *.* TO 'repl'@'192.168.100.%';
 ```
 
-##### 非同期レプリケーション(postion)
-
 ■ db1コンテナ  
 my.cnf  
+/etc/mysql/mysql.conf.d/mysqld.cnf  
 ```
 server-id=1
 log_replica_updates
@@ -149,6 +160,25 @@ log_replica_updates
 # binlog_expire_logs_seconds = 2592000
 # max_binlog_size = 100M
 ```
+
+■ db2コンテナ  
+my.cnf  
+/etc/mysql/mysql.conf.d/mysqld.cnf  
+```
+server-id=2
+log_replica_updates
+
+- 他必要に応じて設定
+# log_bin = /var/log/mysql/mysql-bin.log
+# binlog_expire_logs_seconds = 2592000
+# max_binlog_size = 100M
+```
+
+
+
+##### 非同期レプリケーション(postion)
+
+■ db1コンテナ  
 
 export  
 ```
@@ -165,20 +195,9 @@ docker cp ./db1.dump db2:/tmp/db1.dump
 
 ■ db2コンテナ  
 
-my.cnf  
-```
-server-id=2
-log_replica_updates
-
-- 他必要に応じて設定
-# log_bin = /var/log/mysql/mysql-bin.log
-# binlog_expire_logs_seconds = 2592000
-# max_binlog_size = 100M
-```
-
 import  
 ```
-mysql -uroot  < /tmp/db1.dump
+mysql -ustudy -p -h192.168.100.12 < /tmp/db1.dump
 ```
 
 replication設定  
@@ -219,7 +238,12 @@ systemctl restart mysql
 
 replication構築できたら, db1 mysqlでtableやrecordを作成してdb2に複製されているか確認してみよう  
   
-T1 TABLE
+mysqlコマンド
+```
+mysql -ustudy -p -h192.168.100.11
+```
+
+T2 TABLE
 ```
 CREATE TABLE IF NOT EXISTS `study`.`t2` (
   id int(11) not null  auto_increment
@@ -242,7 +266,11 @@ INSERT INTO `study`.`t2` (id, name, idx_num, created_at) VALUES (null, 'name01',
 
 既存replication設定をリセット  
 @db2コンテナ  
-mysqlコマンド  
+
+mysqlコマンド
+```
+mysql -ustudy -p -h192.168.100.12
+```
 
 リセット
 ```
@@ -252,15 +280,17 @@ reset replica all;
 レプリケーション設定
 ```
 CHANGE REPLICATION SOURCE TO
-  SOURCE_HOST = 192.168.100.11,
-  SOURCE_USER = repl,
-  SOURCE_PASSWORD = repl,
+  SOURCE_HOST = '192.168.100.11',
+  SOURCE_USER = 'repl',
+  SOURCE_PASSWORD = 'repl',
   SOURCE_AUTO_POSITION = 1;
 ```
 レプリケーション開始
 ```
 start replica;
 ```
-
-
+確認
+```
+show replica status;
+```
 
