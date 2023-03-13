@@ -1,16 +1,21 @@
-# mysql_ubuntu
+# ローカル環境構築 MySQL8 + ubuntu 22.04 + docker
 
 ## 概要
 
-mysql8のローカル検証環境を構築するdocker scirpt
-2台構成のmysql8コンテナを docker-compose で構築する。
-M1 Mac でVagrantが使えない代わりになる環境を目指した。
+mysql8のローカル検証環境を構築するdocker scirpt  
+2台構成のmysql8コンテナを docker-compose で構築する。  
+M1 Mac で使えなくなった Vagrant 代わりになる環境を目指した。  
 
 ## 特徴
 
-systemctlが使える ubuntu22.04
-mysql directory (/var/lib/mysql)を永続化済み
-M1 MacBook にて動作する
+docker コンテナ上で systemctl が使える ubuntu22.04 を構築  
+mysql directory (/var/lib/mysql)を永続化済み  
+M1/M2/Intel Mac にて動作する  
+
+## 必要tool
+
+doker  
+docker-compose  
 
 ## 使い方
 
@@ -21,7 +26,7 @@ docker volume create db2vol
 ```
 起動（バックグラウンド）
 ```
-docker up -d --build &
+docker-compose up -d --build -f compose.yaml
 ```
 起動確認
 ```
@@ -110,8 +115,8 @@ INSERT INTO `study`.`t1` (id, name, idx_num, created_at) VALUES (null, 'name01',
 
 #### レプリケーション構築
 
-my.cnf
-export
-import
-replication設定
+my.cnf  
+export  
+import  
+replication設定  
 
