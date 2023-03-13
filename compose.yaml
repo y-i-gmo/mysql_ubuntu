@@ -2,6 +2,7 @@ version: '3'
 
 services:
   db1:
+    container_name: db1 
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,6 +16,7 @@ services:
     volumes:
       - db1vol:/var/lib/mysql
   db2:
+    container_name: db2
     build: 
       context: .
       dockerfile: Dockerfile
