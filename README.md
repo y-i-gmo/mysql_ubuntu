@@ -46,9 +46,11 @@ docker exec -it db2 bash
 
 #### mysql起動/終了
 
-起動/終了/状態確認
+起動/終了/状態確認コマンド
 ```
-rootユーザー
+- terminalで実行
+@rootユーザー
+
 systemctl status mysql
 systemctl stop mysql
 systemctl start mysql
@@ -58,8 +60,11 @@ systemctl start mysql
 
 パスワード設定（secure_installのため）
 ```
+- mysql接続して実行
 mysql -uroot
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password by '{password}';
+
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password by 'root';
+　　# パスワード適宜変更してください
 exit
 ```
 セキュリティ
@@ -68,6 +73,8 @@ mysql_secure_installation
 ```
 
 #### MySQLユーザー作成
+
+@db1コンテナで確認
 
 studyユーザー（フル権限/非推奨）
 ```
@@ -78,6 +85,11 @@ study_readonlyユーザー（権限限定）
 ```
 CREATE USER 'study_ro'@'%' IDENTIFIED BY 'study_ro';
 GRANT SELECT ON *.* TO 'study_ro'@'%';
+```
+レプリケーションユーザー作成
+```
+CREATE USER 'repl'@'192.168.100.%' IDENTIFIED WITH mysql_native_password BY 'repl';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'192.168.100.%';
 ```
 
 default設定では接続できないはず  
@@ -96,21 +108,13 @@ systemctl start mysql
 systemctl status mysql
 ```
 
-
-#### ログイン確認
-
-各MySQLユーザーで
-・ローカルDBへ接続(db1->db1,  db2->db2)
-・リモートDBへ接続（db2 -> db1）
-
-
 #### DB/TABLE作成
 
 ※db1コンテナmysqlでテーブル/レコードを作成して、レプリケーション構築したレプリカDB(db2)に反映されることを確認
 
 mysqlコマンド
 ```
-mysql -ustudy -p -h192.168.100.11
+mysql -ustudy -pstudy -h192.168.100.11
 ```
 
 study DB
@@ -138,20 +142,13 @@ INSERT INTO `study`.`t1` (id, name, idx_num, created_at) VALUES (null, 'name01',
 
 共通設定
 
-■ db1コンテナ  
-MySQLレプリケーションユーザー作成
+@db1コンテナで作業  
 
-```
-mysql -ustudy -p -h192.168.100.11
-
-CREATE USER 'repl'@'192.168.100.%' IDENTIFIED WITH mysql_native_password BY 'repl';
-GRANT REPLICATION SLAVE ON *.* TO 'repl'@'192.168.100.%';
-```
-
-■ db1コンテナ  
 my.cnf  
 /etc/mysql/mysql.conf.d/mysqld.cnf  
 ```
+- ubuntu terminalで作業
+
 server-id=1
 log_replica_updates
 
@@ -161,10 +158,12 @@ log_replica_updates
 # max_binlog_size = 100M
 ```
 
-■ db2コンテナ  
+@db2コンテナで作業  
 my.cnf  
 /etc/mysql/mysql.conf.d/mysqld.cnf  
 ```
+- ubuntu terminalで作業
+
 server-id=2
 log_replica_updates
 
@@ -175,14 +174,13 @@ log_replica_updates
 ```
 
 
-
 ##### 非同期レプリケーション(postion)
 
-■ db1コンテナ  
+@db1コンテナで作業  
 
 export  
 ```
-mysqldump -uroot -p --default-character-set=binary  --single-transaction --master-data=2 --flush-logs --complete-insert --add-drop-database --databases study > db1.dump
+mysqldump -uroot -p --default-character-set=binary  --single-transaction --master-data=2 --flush-logs --complete-insert --add-drop-database --databases study > /tmp/db1.dump
 ```
 
 ファイル転送
@@ -193,37 +191,61 @@ docker cp ./db1.dump db2:/tmp/db1.dump
 ```
 
 
-■ db2コンテナ  
+@db2コンテナで作業  
+
+db1.dump 確認
+```
+less /tmp/db1.dump
+
+TODO: 
+```
 
 import  
 ```
-mysql -ustudy -p -h192.168.100.12 < /tmp/db1.dump
+- ubuntu terminalで作業
+
+mysql -uroot < /tmp/db1.dump
 ```
 
 replication設定  
 ```
+- mysql接続して作業
+mysql -uroot
+
 CHANGE MASTER TO
   MASTER_HOST='192.168.100.11'
   ,MASTER_USER='repl'
   ,MASTER_PASSWORD='repl'
-  ,MASTER_LOG_FILE='binlog.000008'  <-db1.dump参照
-  ,MASTER_LOG_POS=157  <-db1.dump参照
+  ,MASTER_LOG_FILE='binlog.000008'
+  ,MASTER_LOG_POS=157
 ;
+
+MASTER_LOG_FILE と MASTER_LOG_POS を db1.dump の値に変更する
 ```
 確認
 ```
+- mysql接続して作業
+
 show replica status\G
 ```
 replication開始
 ```
+- mysql接続して作業
+
 start replica;
 ```
 確認
 ```
+- mysql接続して作業
+
 show replica status\G
+
+こちらがともに Yes となればレプリケーション構築が成功しています。
+Slave_IO_Running: Yes
+Slave_SQL_Running: Yes
 ```
 
-UUID重複した場合、auto.cnfを削除する  
+UUIDが重複した場合、auto.cnfを削除する  
 ```
 MySQL server UUIDs; these UUIDs must be different for replication to work  
 ```
