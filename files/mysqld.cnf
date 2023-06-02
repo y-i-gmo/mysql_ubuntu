@@ -79,3 +79,6 @@ max_binlog_size   = 500M
 # binlog_do_db		= include_database_name
 # binlog_ignore_db	= include_database_name
 
+# timezone JST
+default-time-zone = '+09:00'
+
