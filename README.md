@@ -17,7 +17,7 @@ M1/M2/Intel Mac にて動作する
 doker  
 docker compose (古いバージョンの方はdocker-compose)  
 
-## 使い方
+## 作成/起動方法
 
 docker volume作成 (永続化のため)
 ```
@@ -41,6 +41,23 @@ docker exec -it db1 bash
 db2コンテナ
 docker exec -it db2 bash
 ```
+
+## 再作成方法
+
+docker containerの削除
+```
+docker compose stop && docker compose rm -f
+```
+docker imageの削除
+```
+docker rmi mysql_ubuntu-db1 mysql_ubuntu-db2
+```
+docker volumeの削除
+```
+docker volume rm db2vol db1vol
+```
+※新規に作り直す場合、上記作成/起動方法へ
+
 
 ## MySQL 
 
