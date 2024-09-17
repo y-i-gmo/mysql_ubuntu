@@ -39,7 +39,7 @@ networks:
 
 volumes:
   db1vol:
-    external: true
+    external: false
   db2vol:
-    external: true
+    external: false
 

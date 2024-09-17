@@ -1,5 +1,6 @@
 # os
-FROM ubuntu:22.04
+#FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # tools
 RUN apt-get -y update \
@@ -16,8 +17,8 @@ ENV LANG ja_JP.UTF-8
 ENV LANGUAGE ja_JP:ja
 
 # MySQL8
-RUN curl -OL https://dev.mysql.com/get/mysql-apt-config_0.8.24-1_all.deb
-RUN apt-get install -y ./mysql-apt-config_0.8.24-1_all.deb
+RUN curl -OL https://dev.mysql.com/get/mysql-apt-config_0.8.34-1_all.deb
+RUN apt-get install -y ./mysql-apt-config_0.8.34-1_all.deb
 RUN apt-get -y update \
  && apt-get install -y mysql-server
 VOLUME /var/lib/mysql
